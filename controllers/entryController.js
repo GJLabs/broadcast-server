@@ -21,22 +21,18 @@ module.exports = {
 
       form.parse(req, (err, fields, files) => {
         if (err) {
-          console.log('err: ', err);
           reject(err);
         }
-        // console.log('FILES:', files)
-        // console.log('FIELDS:', fields)
         // Store entry text and location on entry object
         entry.text = fields.text[0];
         entry.location = fields.location[0];
 
         for (var file in files) {
-          // console.log('FILE:', files[file])
           var filedata = files[file][0];
           var temppath = filedata.path;
           var filetype = filedata.headers['content-type'].split('/')
           var filename = userId + '-' + Date.now() + '.' + filetype[1];
-          console.log('FILETYPE1:', filetype)
+
           // Build file paths
           var filedir = 'uploads/';
           var filepath = filedir + filename;
@@ -44,64 +40,28 @@ module.exports = {
           var thumbnailPath = filedir + thumbnailName;
           var tempThumbnailPath = 'static/' + filedir + thumbnailName;
 
+          var fileContent = fs.readFileSync(temppath);
 
-          fs.readFile(temppath, function(err, data) {
-            if (err) {
-              reject(err)
-            }
-
-            console.log('FILETYPE2:', filetype);
-            // If image then create thumbnail and upload to S3
-            if (filetype[0] === 'image') {
-
-              console.log('IMAGE DETECTED')
-              // Upload image to S3 and set filepath on entry object
-              // entry.filepath =  uploadToS3(filepath, data);
-              entry.filepath = 'image here'
-              // create thumbnail
-              easyimg.rescrop({
-                 src: temppath, 
-                 dst: tempThumbnailPath,
-                 width:60, 
-                 height:60,
-              }) // end easyimg.thumbnail
-              .then((thumbnail) => {
-                fs.readFile(tempThumbnailPath, function(err, data) {
-                  if (err) {
-                    reject(err);
-                  }
-                  // Upload to S3 and set thumbnail filepath
-                  // entry.thumbnail = uploadToS3(thumbnailPath, data);
-                  entry.thumbnail = 'thumbnail path here';
-                  // Delete temporary local thumbnail
-                  // fs.unlink(tempThumbnailPath, function(err, data) {
-                  //   if (err) {
-                  //     console.log('Temporary local thumbnail deletion error', err);
-                  //   }
-                  // })
-                }) // end fs.readFile
-              })
-              .catch((err) => {
-                reject(err);
-              })
-            } else {
-              // Upload audio file to S3 and set filepath on entry object
-              entry.audiopath =  uploadToS3(filepath, data);
-            }
-            resolve(entry);
-          }) // end fs.readFile
+          // If image then create thumbnail and upload to S3
+          if (filetype[0] === 'image') {
+            // Upload image to S3 and set filepath on entry object
+            entry.filepath =  uploadToS3(filepath, fileContent);
+          } else {
+            // Upload audio file to S3 and set filepath on entry object
+            entry.audiopath =  uploadToS3(filepath, fileContent);
+          }
+          resolve(entry);
         } // end for in files loop
       }) // end form.parse
     }) // end promise
     .then((entry) => {
-      res.json(entry)
-      // db.Entry.create(entry)
-      // .then((newEntry) => {
-      //   res.json(newEntry);
-      // })
-      // .catch((err) => {
-      //   res.status(500).json(err);
-      // })
+      db.Entry.create(entry)
+      .then((newEntry) => {
+        res.json(newEntry);
+      })
+      .catch((err) => {
+        res.status(500).json(err);
+      })
     })
     .catch((err) => {
       res.status(500).json(err);
