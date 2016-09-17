@@ -29,7 +29,7 @@ module.exports = {
       var filesArray = files.file;
       var fileIndex = filesArray.length - 1;
 
-      function parseFiles(count) {
+      function parseFiles() {
 
         return new Promise((resolve, reject) => {
           // initiate variables
@@ -81,19 +81,23 @@ module.exports = {
         .then((entry) => {
           return new Promise((resolve, reject) => {
             if (fileIndex > 0) {
+              // decrement file index and parse next file
               fileIndex--;
-              parseFiles(fileIndex);
+              parseFiles();
             } else {
+              // all files have been parsed
               resolve(entry);
             }
           })
         })
         .then((entry) => {
+          // finished parsing files. send response to client. 
           res.json(entry);
         })
       }
 
-      parseFiles(fileIndex);
+      // Start parsing all form files
+      parseFiles();
 
     }) // end form.parse
 
