@@ -2,6 +2,7 @@
 
 **Table of Contents** 
 
+- [**Configuration**](#configuration)
 - [**Log In**](#log-in)
 - [**Sign Up**](#sign-up)
 - [**Fetch Entries**](#fetch-entries)
@@ -12,6 +13,16 @@
 - [**Get Friend Requests**](#get-friend-requests)
 - [**Accept Friend Request**](#accept-friend-request)
 - [**Reject Friend Request**](#reject-friend-request)
+
+**Configuration**
+----
+* **AWS S3 configuration**
+  Refer to `config/aws.config.js` and create `config/aws.js`
+  with your own AWS S3 credentials. 
+
+* **Database configuration**
+  Refer to `config/db.config.js` and create `config/db.js`
+  with your own database URI connection string.
 
 **Log In**
 ----
@@ -152,6 +163,9 @@
         userId: [integer],
         text: [string],
         location: [string],
+        filepath: [string],
+        thumbnail: [string],
+        audiopath: [string],
         createdAt: [timestamp],
         updatedAt: [timestamp] 
       }
@@ -197,10 +211,12 @@
  
    `x-access-token`
 
-* **Data Params**
+* **Form Params**
 
   `text=[string]`<br />
   `location=[string]`<br />
+  `file=[string]`<br />
+  `file=[string]`
 
 * **Success Response:**
 
@@ -216,12 +232,14 @@
     fetch('http://localhost:3000/api/entries', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
         'x-access-token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTAsInVzZXJuYW1lIjoidGVzdDUiLCJwYXNzd29yZCI6InBhc3MiLCJmdWxsbmFtZSI6ImhlbGxvIiwiY3JlYXRlZEF0IjoiMjAxNi0wOS0wNFQyMzo0MToyNS41NDJaIiwidXBkYXRlZEF0IjoiMjAxNi0wOS0wNFQyMzo0MToyNS41NDJaIn0.yjfFIaKJJxHzp5UPegVwzL9rMWXsALgLTo3emwJV0-w'
       },
       body: {
         text: 'Hello World!',
-        location: 'San Francisco, California'
+        location: 'San Francisco, California',
+        file: 'path/to/temp/image/imageFile.jpg',
+        file: 'path/to/temp/audio/audioFile.aac'
       }
     })
   ```
