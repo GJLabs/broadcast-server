@@ -19,7 +19,7 @@ module.exports = {
 
     form.parse(req, (err, fields, files) => {
       if (err) {
-        reject(err);
+        console.log('Error from form.parse', err);
       }
 
       // Store entry text and location on entry object
