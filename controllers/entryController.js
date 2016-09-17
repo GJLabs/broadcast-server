@@ -26,14 +26,17 @@ module.exports = {
       entry.text = fields.text[0];
       entry.location = fields.location[0];
 
-      var filesArray = files.file;
-      var fileIndex = filesArray.length - 1;
+      var fileIndex = files.file ? files.file.length - 1 : 0;
+      // var fileIndex = filesArray.length - 1;
 
       function parseFiles() {
-
         return new Promise((resolve, reject) => {
+          if (!files.file) {
+            // resolve if no files
+            resolve(entry);
+          }
           // initiate variables
-          var file = filesArray[fileIndex];
+          var file = files.file[fileIndex];
           var temppath = file.path;
           var filetype = file.headers['content-type'].split('/');
           var filename = userId + '-' + Date.now() + '.' + filetype[1];
@@ -92,7 +95,13 @@ module.exports = {
         })
         .then((entry) => {
           // finished parsing files. send response to client. 
-          res.json(entry);
+          db.Entry.create(entry)
+          .then((newEntry) => {
+            res.json(newEntry);
+          })
+          .catch((err) => {
+            res.json(err)
+          })
         })
       }
 
